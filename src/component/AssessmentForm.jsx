@@ -39,7 +39,7 @@ function AssessmentForm({ onNext, onBack }) {
     }
 
     console.log("Data Nilai:", grades);
-    if (onNext) onNext();
+    if (onNext) onNext(grades);
   };
 
   return (
@@ -60,7 +60,7 @@ function AssessmentForm({ onNext, onBack }) {
 
         {/* User Avatar */}
         <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-sm cursor-pointer">
-          VR
+          AL
         </div>
       </header>
 
@@ -71,7 +71,7 @@ function AssessmentForm({ onNext, onBack }) {
           {/* Progress Bar */}
           <div className="mb-10">
             <div className="flex justify-between items-end mb-2 text-sm font-medium text-slate-600">
-              <span>Step 1 of 2: Academic Data</span>
+              <span>Langkah 1 dari 2: Data Akademik</span>
               <span className="text-blue-600">50%</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-2">
@@ -81,9 +81,9 @@ function AssessmentForm({ onNext, onBack }) {
 
           {/* Form Header */}
           <div className="mb-8">
-            <h1 className="text-xl font-bold text-slate-800 mb-2">Academic Assessment</h1>
+            <h1 className="text-xl font-bold text-slate-800 mb-2">Penilaian Akademik</h1>
             <p className="text-slate-500 text-sm leading-relaxed">
-              Please enter your average grades (0-100) for the following subjects to help us analyze your academic profile.
+              Silakan masukkan nilai rata-rata Anda (0-100) untuk mata pelajaran berikut agar kami dapat menganalisis profil akademik Anda.
             </p>
           </div>
 

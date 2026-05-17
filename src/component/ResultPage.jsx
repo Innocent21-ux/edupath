@@ -1,44 +1,64 @@
 import React from 'react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import LandingPage from './LandingPage';
+import { 
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, CartesianGrid
+} from 'recharts';
 
-function ResultPage({ onRetry, onBack }) {
-  // Data Grafik Radar (Peta Potensi)
+// Menerima prop resultData (dari API), academicData (Step 1), dan behavioralData (Step 2)
+function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData }) {
+  
+  const finalData = resultData?.data;
+
+  // Data User & AI Summary
+  const fullName = finalData?.user_details?.full_name || "Siswa";
+  const schoolName = finalData?.user_details?.school_name || "Sekolah Tidak Diketahui";
+  const aiSummary = finalData?.ai_summary || "AI sedang memproses ringkasan potensi Anda...";
+
+  // 1. DATA RADAR CHART 
   const radarData = [
-    { subject: 'Logika & Matematika', A: 95, fullMark: 100 },
-    { subject: 'Sains', A: 75, fullMark: 100 },
-    { subject: 'Teknologi', A: 85, fullMark: 100 },
-    { subject: 'Analisa Data', A: 90, fullMark: 100 },
-    { subject: 'Riset', A: 80, fullMark: 100 },
-    { subject: 'Pemikiran Komputasional', A: 88, fullMark: 100 },
+    { subject: 'Math', A: Number(academicData?.['Matematika']) || 0, fullMark: 100 },
+    { subject: 'Physics', A: Number(academicData?.['Fisika']) || 0, fullMark: 100 },
+    { subject: 'Chemistry', A: Number(academicData?.['Kimia']) || 0, fullMark: 100 },
+    { subject: 'Biology', A: Number(academicData?.['Biologi']) || 0, fullMark: 100 },
+    { subject: 'History', A: Number(academicData?.['Sejarah']) || 0, fullMark: 100 },
+    { subject: 'Geography', A: Number(academicData?.['Geografi']) || 0, fullMark: 100 },
+    { subject: 'English', A: Number(academicData?.['Bahasa Inggris']) || 0, fullMark: 100 }
   ];
 
-  // Data Bar Chart (Tren Karir)
-  const barData = [
-    { name: 'Data Scientist', value: 95, level: 'Sangat Tinggi' },
-    { name: 'AI Engineer', value: 80, level: 'Tinggi' },
-    { name: 'Financial Analyst', value: 45, level: 'Stabil' },
-  ];
+  // 2. DATA PROFIL NILAI (Bar Chart)
+  const barProfileData = [...radarData].reverse();
 
-  // Fungsi untuk memicu fitur Save as PDF dari browser
+  // 3. KALKULASI SKOR RATA-RATA (Untuk Ringkasan Nilai)
+  const calculateAverage = (list) => {
+    const scores = list.map(key => Number(academicData?.[key]) || 0);
+    if (scores.length === 0) return "0.0";
+    return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+  };
+  
+  const sainsScore = calculateAverage(['Matematika', 'Fisika', 'Kimia', 'Biologi']);
+  const sosialScore = calculateAverage(['Sejarah', 'Geografi', 'Bahasa Inggris']);
+  const overallScore = ((parseFloat(sainsScore) + parseFloat(sosialScore)) / 2).toFixed(1);
+
+  // 4. DATA REKOMENDASI KARIR
+  const careers = finalData?.career_matches || [];
+
   const handleDownloadPDF = () => {
     window.print();
   };
 
+  if (!finalData) return <div className="min-h-screen flex items-center justify-center text-blue-600 font-bold">Memuat Hasil Analisis AI...</div>;
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-16">
       
-      {/* Header (Disembunyikan saat dicetak ke PDF dengan class 'print:hidden') */}
+      {/* Header Print Hidden */}
       <header className="flex justify-between items-center bg-white px-8 py-4 border-b border-slate-200 print:hidden sticky top-0 z-50">
         <button onClick={onBack} className="text-slate-500 hover:text-blue-600 font-medium flex items-center transition">
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
           Kembali
         </button>
         <div className="text-blue-700 font-bold text-xl">EduPath</div>
-        <button 
-          onClick={handleDownloadPDF}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium shadow-sm transition flex items-center"
-        >
+        <button onClick={handleDownloadPDF} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium shadow-sm transition flex items-center">
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
           Unduh PDF
         </button>
@@ -46,138 +66,167 @@ function ResultPage({ onRetry, onBack }) {
 
       <main className="max-w-6xl mx-auto px-6 mt-10">
         
-        {/* User Info Section */}
+        {/* Informasi Pengguna Dinamis */}
         <div className="mb-10">
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Hebat, Vincentius Ananto Galih Rinaldy!</h1>
-          <p className="text-slate-600 mt-2 font-medium">Mahasiswa dari Universitas Kebangsaan Republik Indonesia</p>
-          <p className="text-slate-600 mt-1">Profilmu lebih condong ke arah <span className="font-bold text-blue-600">Analitis</span>.</p>
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Hebat, {fullName}!</h1>
+          <p className="text-slate-600 mt-2 font-medium">Siswa dari {schoolName}</p>
         </div>
 
+        {/* GRAFIK RADAR & AI SUMMARY */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-          {/* Kolom Kiri: Peta Potensi & AI Overview */}
           <div className="lg:col-span-2 space-y-6">
-            
-            {/* Peta Potensi Kognitif */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <h2 className="text-lg font-bold text-slate-800 mb-6">Peta Potensi Kognitif</h2>
-              <div className="w-full h-[300px]">
+              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                 <span className="text-xl mr-2">🕸️</span> Profil Kemampuan (Radar)
+              </h2>
+              <div className="w-full h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                    <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    <Radar name="Skor" dataKey="A" stroke="#2563eb" fill="#3b82f6" fillOpacity={0.4} />
+                    <PolarGrid stroke="#cbd5e1" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 12 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                    <Radar 
+                      name="Skor" 
+                      dataKey="A" 
+                      stroke="#1d4ed8" 
+                      strokeWidth={2}
+                      fill="#3b82f6" 
+                      fillOpacity={0.15} 
+                      activeDot={{ r: 4, fill: '#1d4ed8' }} 
+                    />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
             </div>
-
-            {/* AI Overview */}
-            <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
-              <h3 className="flex items-center text-blue-700 font-bold mb-3">
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd"></path></svg>
-                AI Overview
-              </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Vincentius memiliki intuisi analitis yang luar biasa dipadukan dengan pemikiran komputasional yang sangat terstruktur. 
-                Ia memiliki ketertarikan alami dalam memecahkan masalah kompleks berbasis data dan sangat teliti terhadap detail. 
-                Dengan keunggulan logikanya yang menonjol, Vincentius memiliki potensi yang sangat besar untuk unggul di lingkungan 
-                teknis yang serba cepat dan berfokus pada inovasi teknologi.
-              </p>
-            </div>
           </div>
+          
+          <div className="lg:col-span-1">
+             <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 h-full">
+                <h3 className="flex items-center text-blue-700 font-bold mb-3">
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd"></path></svg>
+                  AI Overview
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{aiSummary}</p>
+             </div>
+          </div>
+        </div>
 
-          {/* Kolom Kanan: Tren Karir 2030 */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 className="text-lg font-bold text-slate-800 mb-6">Tren Karir 2030</h2>
-            
-            {/* Indikator Growth */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6 text-center">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Growth Projection</span>
-              <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">⬆ HIGH GROWTH</span>
-            </div>
+        {/* GRAFIK BAR (PROFIL NILAI) */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-10">
+          <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+            <span className="text-xl mr-2">📊</span> Profil Nilai
+          </h2>
+          <div className="w-full h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={barProfileData}
+                layout="vertical"
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis dataKey="subject" type="category" tick={{ fill: '#475569', fontSize: 12 }} width={80} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} />
+                <Bar dataKey="A" radius={[0, 4, 4, 0]} barSize={25}>
+                  {barProfileData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={['English', 'Geography', 'History'].includes(entry.subject) ? '#ea580c' : '#2563eb'} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-            {/* Bar Chart Sederhana menggunakan div agar lebih mirip desain Anda */}
-            <div className="space-y-5">
-              {barData.map((item, index) => (
-                <div key={index}>
-                  <div className="flex justify-between text-xs font-semibold mb-1.5">
-                    <span className="text-slate-700">{item.name}</span>
-                    <span className="text-blue-600">{item.level}</span>
+        {/* BAGIAN LIST REKOMENDASI JURUSAN & PROFIL */}
+        <div className="max-w-4xl mx-auto">
+          
+          <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
+            <span className="mr-2">🎯</span> Rekomendasi Jurusan
+          </h2>
+          
+          <div className="space-y-4 mb-10">
+            {careers.map((career, index) => (
+              <div key={index} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center hover:border-blue-300 transition">
+                <div className="flex items-center">
+                  <span className="text-slate-400 font-bold text-lg mr-6">#{index + 1}</span>
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-lg flex items-center">
+                      {career.career_details.career_name}
+                      <span className="ml-2 text-sm">
+                        {index === 0 ? '🛡️' : index === 1 ? '💻' : '💼'}
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">
+                      Confidence: {(career.confidence_score * 100).toFixed(1)}%
+                    </p>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${index === 0 ? 'bg-blue-600' : index === 1 ? 'bg-blue-300' : 'bg-slate-300'}`} 
-                      style={{ width: `${item.value}%` }}
-                    ></div>
-                  </div>
                 </div>
-              ))}
+                <div className="text-blue-600">
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* RINGKASAN NILAI */}
+          <div className="grid grid-cols-3 gap-8 py-8 border-t border-b border-slate-200 mb-10">
+            <div className="text-center">
+              <p className="text-slate-400 text-xs font-bold uppercase mb-2">Sains</p>
+              <p className="text-4xl font-light text-slate-800">{sainsScore}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-slate-400 text-xs font-bold uppercase mb-2">Sosial</p>
+              <p className="text-4xl font-light text-slate-800">{sosialScore}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-slate-400 text-xs font-bold uppercase mb-2">Overall</p>
+              <p className="text-4xl font-bold text-blue-600">{overallScore}</p>
             </div>
           </div>
-        </div>
 
-        {/* Rekomendasi Karir */}
-        <div className="mb-10">
-          <h2 className="text-xl font-bold text-slate-800 mb-6">Rekomendasi Karir</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Card 1 */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-200 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">★ 95% Match</div>
-              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4">📊</div>
-              <h3 className="font-bold text-slate-800 mb-2">Data Scientist</h3>
-              <p className="text-xs text-slate-500 mb-6 leading-relaxed">Seorang ahli yang mengubah data mentah menjadi wawasan strategis.</p>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase">Jurusan Rekomendasi:</p>
-                <div className="flex gap-2">
-                  <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded">Sains Data</span>
-                  <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded">Statistika</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <div className="w-10 h-10 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center mb-4">⚙️</div>
-              <h3 className="font-bold text-slate-800 mb-2">Backend Engineer</h3>
-              <p className="text-xs text-slate-500 mb-6 leading-relaxed">Fokus pada arsitektur peladen, pengelolaan basis data, dan performa API.</p>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase">Jurusan Rekomendasi:</p>
-                <div className="flex gap-2">
-                  <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded">Teknik Informatika</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <div className="w-10 h-10 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center mb-4">🎨</div>
-              <h3 className="font-bold text-slate-800 mb-2">UI/UX Researcher</h3>
-              <p className="text-xs text-slate-500 mb-6 leading-relaxed">Menganalisis kebutuhan pengguna untuk merancang antarmuka yang intuitif.</p>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase">Jurusan Rekomendasi:</p>
-                <div className="flex gap-2">
-                  <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded">Sistem Informasi</span>
-                  <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded">Psikologi</span>
-                </div>
-              </div>
-            </div>
-
+          {/* PROFIL BELAJAR */}
+          <div className="mb-12">
+             <h2 className="text-xl font-bold text-slate-800 mb-8 flex items-center">
+               <span className="mr-2">🚀</span> Profil Belajar
+             </h2>
+             <div className="grid grid-cols-3 gap-4 text-left">
+               <div>
+                 <p className="text-slate-400 text-xs font-bold uppercase mb-3">Jam Belajar</p>
+                 <p className="text-2xl font-medium text-slate-700">
+                   {/* MEMBACA DARI VARIABEL PAYLOAD YANG TEPAT */}
+                   {behavioralData?.weekly_self_study_hours || 40} jam
+                 </p>
+               </div>
+               <div>
+                 <p className="text-slate-400 text-xs font-bold uppercase mb-3">Absensi</p>
+                 <p className="text-2xl font-medium text-slate-700">
+                   {/* MEMBACA DARI VARIABEL PAYLOAD YANG TEPAT */}
+                   {behavioralData?.absence_days || 8} hari
+                 </p>
+               </div>
+               <div>
+                 <p className="text-slate-400 text-xs font-bold uppercase mb-3">Ekstrakurikuler</p>
+                 <p className="text-2xl font-medium text-slate-700">
+                   {/* KONVERSI BOOLEAN KE TEKS */}
+                   {behavioralData?.extracurricular ? 'Ya' : 'Tidak'}
+                 </p>
+               </div>
+             </div>
           </div>
-        </div>
+          
+          <div className="flex justify-center print:hidden">
+            <button 
+              onClick={onRetry}
+              className="px-8 py-3 bg-white border border-slate-300 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition shadow-sm"
+            >
+              Ulangi Asesmen
+            </button>
+          </div>
 
-        {/* Action Button (Sembunyi saat cetak PDF) */}
-        <div className="flex justify-center mt-12 print:hidden">
-          <button 
-            onClick={onRetry}
-            className="flex items-center px-6 py-3 bg-white border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 shadow-sm transition"
-          >
-            <svg className="w-5 h-5 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            Coba Asesmen Ulang
-          </button>
         </div>
-
       </main>
     </div>
   );

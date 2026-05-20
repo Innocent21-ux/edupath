@@ -8,6 +8,7 @@ import LoadingPage from './component/LoadingPage';
 import AnalysisLoading from './component/LoadingPage';
 import Login from './component/Login'; 
 import Register from './component/Register';
+import UserProfilePage from './component/UserProfilePage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('landing');
@@ -17,14 +18,20 @@ function App() {
 
 
   if (currentPage === 'landing') {
-    return <LandingPage onStart={() => setCurrentPage('onboarding')}
-    onLoginClick={() => setCurrentPage('login')} />;
+    return (
+      <LandingPage 
+        onStart={() => setCurrentPage('onboarding')} 
+        onLoginClick={() => setCurrentPage('login')} 
+        onRegisterClick={() => setCurrentPage('register')} 
+        onProfileClick={() => setCurrentPage('profile')}   
+      />
+    );
   }
 
   if (currentPage === 'login') {
     return (
       <Login 
-        onLoginSuccess={() => setCurrentPage('onboarding')} 
+        onLoginSuccess={() => setCurrentPage('landing')} 
         onNavigateRegister={() => setCurrentPage('register')} 
       />
     );
@@ -35,6 +42,15 @@ function App() {
       <Register 
         onRegisterSuccess={() => setCurrentPage('login')} 
         onNavigateLogin={() => setCurrentPage('login')} 
+      />
+    );
+  }
+
+  if (currentPage === 'profile') {
+    return (
+      <UserProfilePage 
+        onBack={() => setCurrentPage('landing')} 
+        onLogout={() => setCurrentPage('landing')} 
       />
     );
   }

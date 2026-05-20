@@ -21,15 +21,39 @@ function Login({ onLoginSuccess, onNavigateRegister }) {
 
       const result = await response.json();
 
-      if (!result.success) {
-        throw new Error(result.error?.details || result.message || 'Login gagal. Periksa kembali email dan password Anda.');
+     if (!result.success) {
+        let errorMessage = 'Terjadi kesalahan sistem.';
+        
+        // 1. Cek apakah ini error Validasi (400) yang berbentuk Array
+        if (result.error?.code === 'VALIDATION_ERROR' && Array.isArray(result.error.details)) {
+          // Mengambil semua pesan error validasi dan menggabungkannya dengan koma
+          errorMessage = result.error.details.map(err => err.message).join(', ');
+        } 
+        // 2. Cek apakah ini error Global (401, 429, 500) yang berbentuk Teks String
+        else if (typeof result.error?.details === 'string') {
+          errorMessage = result.error.details;
+        } 
+        // 3. Cadangan jika bentuknya format lain
+        else if (result.message) {
+          errorMessage = result.message;
+        }
+
+        throw new Error(errorMessage);
       }
 
       // Mengambil token dari data.access_token sesuai kontrak API
       const token = result.data?.access_token; 
+      const userData = result.data?.user;
       
       if (token) {
         localStorage.setItem('user_token', token); // Menyimpan JWT ke memori browser
+
+        if (userData?.full_name) {
+          localStorage.setItem('user_name', userData.full_name);
+        }
+        if (userData?.school_name) {
+          localStorage.setItem('user_school', userData.school_name);
+        }
         if (onLoginSuccess) onLoginSuccess();
       } else {
         throw new Error('Gagal mendapatkan akses token dari server.');

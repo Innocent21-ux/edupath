@@ -4,18 +4,29 @@ import {
 } from 'recharts';
 
 function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData }) {
+  // Mengambil bungkus "data" utama dari respons backend
   const finalData = resultData?.data;
 
-  // State untuk kontrol interaksi Dropdown
+  // State interaksi
   const [openAccordion, setOpenAccordion] = useState('alasan'); 
   const [showAllCareers, setShowAllCareers] = useState(false);  
 
   // 1. Data User & AI Summary
-  const fullName = finalData?.user_details?.full_name || "Siswa";
-  const schoolName = finalData?.user_details?.school_name || "Sekolah Tidak Diketahui";
-  const aiSummary = finalData?.ai_summary || "Berdasarkan analisis AI, kamu memiliki potensi besar. Paduan minat dan bakatmu menunjukkan prospek karir yang menjanjikan di masa depan.";
+  const fullName = finalData?.user_details?.full_name || finalData?.user?.full_name || "Siswa";
+  const schoolName = finalData?.user_details?.school_name || finalData?.user?.school_name || "Sekolah Tidak Diketahui";
+  const aiSummary = finalData?.ai_summary || "Berdasarkan analisis AI, kamu memiliki potensi besar.";
 
-  // 2. DATA RADAR CHART 
+  // 2. DATA AI EXPLANATION (Dinamic dari Backend)
+  const aiExplanation = finalData?.ai_explanation || {};
+  const alasanText = aiExplanation.alasan || "Data alasan belum tersedia dari AI.";
+  const kekuatanText = aiExplanation.kekuatan || "Data kekuatan belum tersedia dari AI.";
+  const saranText = aiExplanation.saran || "Data saran pengembangan belum tersedia dari AI.";
+  const referensiList = aiExplanation.referensi || [];
+
+  // 3. DATA REKOMENDASI KARIR
+  const careers = finalData?.career_matches || [];
+
+  // 4. DATA RADAR CHART 
   const radarData = [
     { subject: `Math (${Number(academicData?.['Matematika']) || 0})`, A: Number(academicData?.['Matematika']) || 0, fullMark: 100 },
     { subject: `English (${Number(academicData?.['Bahasa Inggris']) || 0})`, A: Number(academicData?.['Bahasa Inggris']) || 0, fullMark: 100 },
@@ -26,7 +37,7 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
     { subject: `Physics (${Number(academicData?.['Fisika']) || 0})`, A: Number(academicData?.['Fisika']) || 0, fullMark: 100 }
   ];
 
-  // 3. KALKULASI SKOR RATA-RATA
+  // 5. KALKULASI SKOR RATA-RATA
   const calculateAverage = (list) => {
     const scores = list.map(key => Number(academicData?.[key]) || 0);
     if (scores.length === 0) return "0.0";
@@ -36,9 +47,6 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
   const sainsScore = calculateAverage(['Matematika', 'Fisika', 'Kimia', 'Biologi']);
   const sosialScore = calculateAverage(['Sejarah', 'Geografi', 'Bahasa Inggris']);
   const overallScore = ((parseFloat(sainsScore) + parseFloat(sosialScore)) / 2).toFixed(1);
-
-  // 4. DATA REKOMENDASI KARIR
-  const careers = finalData?.career_matches || [];
 
   const handleDownloadPDF = () => {
     window.print();
@@ -85,19 +93,14 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                  <span className="text-blue-500 mr-2">🕸️</span> Profil Kemampuan (Radar)
               </h2>
               <div className="w-full h-87.5">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={350}>
                   <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                     <PolarGrid stroke="#e2e8f0" />
                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 11, fontWeight: 600 }} />
                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                     <Radar 
-                      name="Skor" 
-                      dataKey="A" 
-                      stroke="#2563eb" 
-                      strokeWidth={2.5} 
-                      fill="#3b82f6" 
-                      fillOpacity={0.2} 
-                      activeDot={{ r: 6, fill: '#2563eb' }} 
+                      name="Skor" dataKey="A" stroke="#2563eb" strokeWidth={2.5} 
+                      fill="#3b82f6" fillOpacity={0.2} activeDot={{ r: 6, fill: '#2563eb' }} 
                       label={{ fill: '#1d4ed8', fontSize: 11, fontWeight: '700', offset: 8 }}
                     />
                   </RadarChart>
@@ -114,7 +117,13 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
               {/* Menampilkan 2 Karir Utama */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {careers.slice(0, 2).map((career, index) => {
-                  const confidencePercent = Math.round(career.confidence_score * 100);
+                  // Sesuai dengan respons API (sudah format persen seperti 99.91)
+                  const confidencePercent = Math.round(career?.confidence_score || 0);
+                  // Sesuai struktur API contract baru
+                  const careerName = career?.career_name || "Nama Karir";
+                  const careerDesc = career?.description || "Deskripsi Karir";
+                  const majorsList = career?.related_majors || [];
+
                   return (
                     <div key={index} className="border border-slate-200 rounded-xl p-5 hover:border-blue-300 transition-all bg-white">
                       <div className="flex justify-between items-start mb-3">
@@ -123,16 +132,21 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                            {confidencePercent}% Match
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-800 text-base mb-1">{career.career_details.career_name}</h3>
-                      <p className="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">{career.career_details.description}</p>
-                      <div>
-                        <p className="text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Jurusan Terkait</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {career.recommended_majors.map((major, i) => (
-                            <span key={i} className="bg-blue-50 text-blue-600 text-[10px] font-semibold px-2 py-0.5 rounded border border-blue-100">{major.major_name}</span>
-                          ))}
+                      <h3 className="font-bold text-slate-800 text-base mb-1">{careerName}</h3>
+                      <p className="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">{careerDesc}</p>
+                      
+                      {majorsList.length > 0 && (
+                        <div>
+                          <p className="text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Jurusan Terkait</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {majorsList.map((major, i) => (
+                              <span key={i} className="bg-blue-50 text-blue-600 text-[10px] font-semibold px-2 py-0.5 rounded border border-blue-100">
+                                {major?.major_name}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
@@ -141,37 +155,43 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
               {/* DROPDOWN INTERAKTIF "LIHAT SEMUA JALUR" */}
               {careers.length > 2 && (
                 <div className="mt-4 flex flex-col">
-                  
-                  {/* Daftar Karir Tambahan dipindahkan ke ATAS tombol */}
                   {showAllCareers && (
                     <div className="mb-4 pt-4 border-t border-slate-100 space-y-3 animate-fadeIn">
                       {careers.slice(2).map((career, index) => {
-                        const confidencePercent = Math.round(career.confidence_score * 100);
+                        const confidencePercent = Math.round(career?.confidence_score || 0);
+                        const careerName = career?.career_name || "Nama Karir";
+                        const careerDesc = career?.description || "Deskripsi Karir";
+                        const majorsList = career?.related_majors || [];
+
                         return (
                           <div key={index} className="border border-slate-100 bg-slate-50/50 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1.5">
                                 <span className="text-slate-400 font-bold text-xs bg-white border border-slate-200 px-1.5 py-0.5 rounded">#{index + 3}</span>
-                                <h4 className="font-bold text-slate-700 text-sm">{career.career_details.career_name}</h4>
+                                <h4 className="font-bold text-slate-700 text-sm">{careerName}</h4>
                                 <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{confidencePercent}% Match</span>
                               </div>
-                              <p className="text-xs text-slate-500 leading-relaxed pr-2">{career.career_details.description}</p>
+                              <p className="text-xs text-slate-500 leading-relaxed pr-2">{careerDesc}</p>
                             </div>
-                            <div className="min-w-40">
-                              <p className="text-[9px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Jurusan Terkait</p>
-                              <div className="flex flex-wrap gap-1">
-                                {career.recommended_majors.map((major, i) => (
-                                  <span key={i} className="bg-white text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded border border-slate-200">{major.major_name}</span>
-                                ))}
+                            
+                            {majorsList.length > 0 && (
+                              <div className="min-w-40">
+                                <p className="text-[9px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Jurusan Terkait</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {majorsList.map((major, i) => (
+                                    <span key={i} className="bg-white text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded border border-slate-200">
+                                      {major?.major_name}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         );
                       })}
                     </div>
                   )}
 
-                  {/* Tombol Tampil Paling Bawah */}
                   <button 
                     onClick={() => setShowAllCareers(!showAllCareers)}
                     className="w-full py-3 text-sm font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-xl transition flex justify-center items-center border border-slate-200 outline-none"
@@ -181,7 +201,6 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                   </button>
-
                 </div>
               )}
             </div>
@@ -226,7 +245,7 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                 </button>
                 {openAccordion === 'alasan' && (
                   <div className="px-3 pb-3 text-xs text-slate-500 leading-relaxed">
-                    Profil akademik dan minatmu menunjukkan ketertarikan kuat pada pemecahan masalah logis. Kombinasi ini sangat relevan untuk karir yang membutuhkan presisi tinggi.
+                    {alasanText}
                   </div>
                 )}
 
@@ -239,7 +258,7 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                 </button>
                 {openAccordion === 'kekuatan' && (
                   <div className="px-3 pb-3 text-xs text-slate-500 leading-relaxed">
-                    Kemampuan kognitif yang tajam di bidang eksakta dan determinasi belajar yang tinggi (berdasarkan jam belajar mandiri).
+                    {kekuatanText}
                   </div>
                 )}
 
@@ -252,7 +271,7 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                 </button>
                 {openAccordion === 'saran' && (
                   <div className="px-3 pb-3 text-xs text-slate-500 leading-relaxed">
-                    Tingkatkan partisipasi dalam kegiatan ekstrakurikuler organisasi untuk menyeimbangkan keterampilan teknis dengan kemampuan komunikasi.
+                    {saranText}
                   </div>
                 )}
               </div>
@@ -287,20 +306,30 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                </div>
             </div>
 
-            {/* REFERENSI AKADEMIK */}
+            {/* REFERENSI AKADEMIK (Dinamis dari AI Explanation) */}
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
               <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center">
                 <span className="text-blue-500 mr-2">🎓</span> Referensi Akademik
               </h3>
               <div className="space-y-3">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  <h4 className="text-sm font-bold text-slate-800 mb-1">Universitas Airlangga</h4>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">Program unggulan untuk rumpun ilmu terkait.</p>
-                </div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  <h4 className="text-sm font-bold text-slate-800 mb-1">Institut Teknologi Bandung</h4>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">Fokus kuat pada rekayasa dan teknologi.</p>
-                </div>
+                {referensiList.length > 0 ? (
+                  referensiList.map((ref, i) => (
+                    <div key={i} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      <h4 className="text-sm font-bold text-slate-800 mb-1">
+                        {ref?.url ? (
+                          <a href={ref.url} target="_blank" rel="noreferrer" className="hover:text-blue-600 hover:underline">
+                            {ref?.title || "Referensi"}
+                          </a>
+                        ) : (
+                          ref?.title || "Referensi"
+                        )}
+                      </h4>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">{ref?.keterangan || ""}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-slate-400 italic text-center p-4">Belum ada referensi kampus.</div>
+                )}
               </div>
             </div>
 

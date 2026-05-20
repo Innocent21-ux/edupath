@@ -33,7 +33,29 @@ function Register({ onRegisterSuccess, onNavigateLogin }) {
 
       // Cek status success dari response API
       if (!result.success) {
-        throw new Error(result.error?.details || result.message || 'Gagal mendaftar. Silakan periksa data Anda.');
+        let errorMessage = 'Terjadi kesalahan sistem.';
+        
+        // 1. Cek apakah ini error Validasi (400) yang berbentuk Array
+        if (result.error?.code === 'VALIDATION_ERROR' && Array.isArray(result.error.details)) {
+          // Mengambil semua pesan error validasi dan menggabungkannya dengan koma
+          errorMessage = result.error.details.map(err => err.message).join(', ');
+        } 
+        // 2. Cek apakah ini error Global (401, 429, 500) yang berbentuk Teks String
+        else if (typeof result.error?.details === 'string') {
+          errorMessage = result.error.details;
+        } 
+        // 3. Cadangan jika bentuknya format lain
+        else if (result.message) {
+          errorMessage = result.message;
+        }
+
+        throw new Error(errorMessage);
+      }
+      if (result.data?.full_name) {
+        localStorage.setItem('user_name', result.data.full_name);
+      }
+      if (result.data?.school_name) {
+        localStorage.setItem('user_school', result.data.school_name);
       }
 
       // Jika sukses daftar, arahkan user ke halaman login

@@ -6,6 +6,8 @@ import PsychometricForm from './component/PsychometricForm'
 import ResultPage from './component/ResultPage';
 import LoadingPage from './component/LoadingPage';
 import AnalysisLoading from './component/LoadingPage';
+import Login from './component/Login'; 
+import Register from './component/Register';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('landing');
@@ -13,8 +15,27 @@ function App() {
   const [resultData, setResultData] = useState(null);
   const [behavioralData, setBehavioralData] = useState(null);
 
+
   if (currentPage === 'landing') {
     return <LandingPage onStart={() => setCurrentPage('onboarding')} />;
+  }
+
+  if (currentPage === 'login') {
+    return (
+      <Login 
+        onLoginSuccess={() => setCurrentPage('onboarding')} 
+        onNavigateRegister={() => setCurrentPage('register')} 
+      />
+    );
+  }
+
+  if (currentPage === 'register') {
+    return (
+      <Register 
+        onRegisterSuccess={() => setCurrentPage('login')} 
+        onNavigateLogin={() => setCurrentPage('login')} 
+      />
+    );
   }
 
   if (currentPage === 'onboarding') {

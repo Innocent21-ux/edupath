@@ -37,7 +37,7 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
 
     try {
       const API_URL = 'https://edupath-backend.vercel.app/api/v1';
-      const token = 'MOCK_ACCESS_TOKEN'; 
+      const token = localStorage.getItem('user_token'); 
       const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`

@@ -1,13 +1,13 @@
 import React from 'react';
 
-function LandingPage({ onStart }) {
+function LandingPage({ onStart, onLoginClick}) {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
       <header className="flex justify-between items-center px-10 py-6">
         <div className="flex items-center text-blue-700 font-bold text-xl">
           <span className="mr-2">🎓</span> EduPath
         </div>
-        <button className="bg-blue-50 text-blue-700 px-6 py-2 rounded-full font-medium hover:bg-blue-100 transition">
+        <button onClick={onLoginClick} className="bg-blue-50 text-blue-700 px-6 py-2 rounded-full font-medium hover:bg-blue-100 transition">
           Log In
         </button>
       </header>

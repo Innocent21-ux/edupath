@@ -17,7 +17,8 @@ function App() {
 
 
   if (currentPage === 'landing') {
-    return <LandingPage onStart={() => setCurrentPage('onboarding')} />;
+    return <LandingPage onStart={() => setCurrentPage('onboarding')}
+    onLoginClick={() => setCurrentPage('login')} />;
   }
 
   if (currentPage === 'login') {

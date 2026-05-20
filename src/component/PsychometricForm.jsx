@@ -36,7 +36,7 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
     console.log("Data siap dikirim ke backend:", payload);
 
     try {
-      const API_URL = 'http://localhost:3000/api/v1';
+      const API_URL = 'https://edupath-backend.vercel.app/api/v1';
       const token = 'MOCK_ACCESS_TOKEN'; 
       const headers = {
         'Content-Type': 'application/json',

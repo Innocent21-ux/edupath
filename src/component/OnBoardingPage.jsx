@@ -25,13 +25,12 @@ function OnboardingPage({ onNext }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center py-12 px-4 font-sans" 
-         style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 0)', backgroundSize: '20px 20px' }}>
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center py-12 px-4 font-sans">
       
       <div className="bg-white max-w-3xl w-full rounded-2xl shadow-xl overflow-hidden">
         
         <div className="relative bg-slate-200 h-48 flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#d9c5b2] to-[#e6d5c3] opacity-80"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-[#d9c5b2] to-[#e6d5c3] opacity-80"></div>
           <div className="relative z-10 flex flex-col items-center mt-6">
              <div className="bg-white p-3 rounded-full shadow-md mb-2">
                 <span className="text-blue-700 text-2xl">🎓</span>
@@ -61,7 +60,7 @@ function OnboardingPage({ onNext }) {
                     className="flex items-start cursor-pointer group select-none"
                     onClick={() => handleToggle(subject)}
                   >
-                    <div className={`w-5 h-5 rounded-[4px] mt-0.5 mr-3 flex items-center justify-center border transition-colors ${
+                    <div className={`w-5 h-5 rounded-sm mt-0.5 mr-3 flex items-center justify-center border transition-colors ${
                       isChecked 
                         ? 'bg-blue-600 border-blue-600 text-white' 
                         : 'bg-white border-slate-300 text-transparent group-hover:border-blue-400'

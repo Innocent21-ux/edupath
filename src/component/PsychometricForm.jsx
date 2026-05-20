@@ -26,11 +26,11 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
       english_score: Number(academicData?.['Bahasa Inggris']) || 95,
       geography_score: Number(academicData?.['Geografi']) || 65,
       
-      weekly_self_study_hours: Number(studyHours) || 40,
-      absence_days: Number(absentDays) || 8,
+      weekly_self_study_hours: Number(studyHours),
+      absence_days: Number(absentDays),
       
-      part_time_job: partTimeJob === 'true', 
-      extracurricular: extracurricular === 'true' 
+      part_time_job: partTimeJob === 'Yes', 
+      extracurricular: extracurricular === 'Yes' 
     };
 
     console.log("Data siap dikirim ke backend:", payload);
@@ -104,11 +104,22 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
                 rank: 2, confidence_score: 0.85,
                 career_details: { career_name: "Software Engineer", description: "Pengembang aplikasi." },
                 recommended_majors: [{ major_name: "Ilmu Komputer" }]
-              }
+              },
+              {
+                rank: 1, confidence_score: 0.95,
+                career_details: { career_name: "Data Scientist", description: "Ahli analisis data." },
+                recommended_majors: [{ major_name: "Sains Data" }]
+              },
+              {
+                rank: 1, confidence_score: 0.95,
+                career_details: { career_name: "Data Scientist", description: "Ahli analisis data." },
+                recommended_majors: [{ major_name: "Sains Data" }]
+              },
             ]
           }
         };
-        if (onSubmitSuccess) onSubmitSuccess(mockAPIResponse);
+        if (onSubmitSuccess)
+          onSubmitSuccess(mockAPIResponse, payload);
       }, 1500);
 
     } finally {

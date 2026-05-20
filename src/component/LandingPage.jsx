@@ -21,7 +21,6 @@ function LandingPage({ onStart }) {
             Gunakan kekuatan pemetaan AI untuk menganalisis minat, bakat, dan nilai akademis Anda. 
             Kami membantu mengurangi kebingungan dalam memilih masa depan dengan memberikan rekomendasi berbasis data yang tenang dan dapat diandalkan.
           </p>
-          {/* Tombol ini sekarang bisa diklik untuk pindah halaman */}
           <button 
             onClick={onStart} 
             className="bg-blue-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-blue-800 transition"
@@ -59,6 +58,23 @@ function LandingPage({ onStart }) {
           </div>
         </div>
       </section>
+
+      <footer className="border-t border-slate-200 bg-slate-50 px-10 py-8 flex flex-col md:flex-row justify-between items-center text-sm">
+        <div className="flex items-center text-blue-700 font-bold mb-4 md:mb-0">
+          <span className="mr-2">🎓</span> EduPath
+        </div>
+        
+        <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-slate-500 font-medium mb-4 md:mb-0">
+          <a href="#" className="hover:text-blue-600 transition">Privacy Policy</a>
+          <a href="#" className="hover:text-blue-600 transition">Terms of Service</a>
+          <a href="#" className="hover:text-blue-600 transition">Help Center</a>
+          <a href="#" className="hover:text-blue-600 transition">Contact Us</a>
+        </nav>
+        
+        <div className="text-slate-400 font-medium text-xs md:text-sm text-center">
+          © 2026 EduPath AI. Empowering Future Scholars.
+        </div>
+      </footer>
     </div>
   );
 }

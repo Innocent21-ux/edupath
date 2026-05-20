@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import LandingPage from './component/LandingPage';
-import OnboardingPage from './component/OnboardingPage';
+import OnboardingPage from './component/OnBoardingPage';
 import AssessmentForm from './component/AssessmentForm';
 import PsychometricForm from './component/PsychometricForm'
 import ResultPage from './component/ResultPage';

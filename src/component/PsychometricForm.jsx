@@ -1,30 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
+function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClick }) { // Tambahkan onProfileClick
   const [studyHours, setStudyHours] = useState(10);
   const [absentDays, setAbsentDays] = useState('');
   
-  // State untuk Part-Time Job dan Ekstrakurikuler (menggunakan format Yes/No)
   const [partTimeJob, setPartTimeJob] = useState('No'); 
   const [extracurricular, setExtracurricular] = useState('No');
   
   const [isLoading, setIsLoading] = useState(false);
 
+  // State untuk inisial profil
+  const [initials, setInitials] = useState('U');
+
+  // Mengambil nama dari localStorage
+  useEffect(() => {
+    const fullName = localStorage.getItem('user_name');
+    if (fullName) {
+      const nameParts = fullName.trim().split(' ');
+      const ini = nameParts.length > 1 
+        ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+        : nameParts[0][0].toUpperCase();
+      setInitials(ini);
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // ==========================================
-    // PAYLOAD
-    // ==========================================
     const payload = {
-      math_score: Number(academicData?.['Matematika']) || 92,
-      physics_score: Number(academicData?.['Fisika']) || 60,
-      chemistry_score: Number(academicData?.['Kimia']) || 78,
-      biology_score: Number(academicData?.['Biologi']) || 72,
-      history_score: Number(academicData?.['Sejarah']) || 65,
-      english_score: Number(academicData?.['Bahasa Inggris']) || 95,
-      geography_score: Number(academicData?.['Geografi']) || 65,
+      math_score: Number(academicData?.['Matematika'] ?? 92), 
+      physics_score: Number(academicData?.['Fisika'] ?? 60),
+      chemistry_score: Number(academicData?.['Kimia'] ?? 78),
+      biology_score: Number(academicData?.['Biologi'] ?? 72),
+      history_score: Number(academicData?.['Sejarah'] ?? 65),
+      english_score: Number(academicData?.['Bahasa Inggris'] ?? 95),
+      geography_score: Number(academicData?.['Geografi'] ?? 65),
       
       weekly_self_study_hours: Number(studyHours),
       absence_days: Number(absentDays),
@@ -43,7 +54,6 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
         'Authorization': `Bearer ${token}`
       };
 
-      // 1. Submit Assessment
       const assessRes = await fetch(`${API_URL}/assessments`, {
         method: 'POST',
         headers,
@@ -53,7 +63,6 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
       const assessData = await assessRes.json();
       const assessmentId = assessData.data.assessment_id;
 
-      // 2. Generate Prediction
       const predictRes = await fetch(`${API_URL}/recommendations/predict`, {
         method: 'POST',
         headers,
@@ -63,7 +72,6 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
       const predictData = await predictRes.json();
       const recommendationId = predictData.data.recommendation_id;
 
-      // 3. Get Recommendation Details
       const resultRes = await fetch(`${API_URL}/recommendations/${recommendationId}`, {
         method: 'GET',
         headers
@@ -76,7 +84,6 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
     } catch (error) {
       console.warn("API Backend gagal. Menggunakan simulasi lokal.");
       
-      // Simulasi Fallback (agar web tidak freeze saat backend mati)
       setTimeout(() => {
         const mockAPIResponse = {
           success: true,
@@ -99,22 +106,7 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
                 rank: 1, confidence_score: 0.95,
                 career_details: { career_name: "Data Scientist", description: "Ahli analisis data." },
                 recommended_majors: [{ major_name: "Sains Data" }]
-              },
-              {
-                rank: 2, confidence_score: 0.85,
-                career_details: { career_name: "Software Engineer", description: "Pengembang aplikasi." },
-                recommended_majors: [{ major_name: "Ilmu Komputer" }]
-              },
-              {
-                rank: 1, confidence_score: 0.95,
-                career_details: { career_name: "Data Scientist", description: "Ahli analisis data." },
-                recommended_majors: [{ major_name: "Sains Data" }]
-              },
-              {
-                rank: 1, confidence_score: 0.95,
-                career_details: { career_name: "Data Scientist", description: "Ahli analisis data." },
-                recommended_majors: [{ major_name: "Sains Data" }]
-              },
+              }
             ]
           }
         };
@@ -127,20 +119,35 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
     }
   };
 
+  // Fungsi navigasi ke Home
+  const handleGoHome = () => {
+    // onBack dari Props di-repurpose untuk me-reset form ke awal (di-handle oleh App.jsx)
+    if (onBack) onBack('home'); 
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col">
-      <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center">
+      
+      {/* HEADER NAVIGASI SERAGAM */}
+      <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center w-full">
         <div className="flex items-center text-blue-700 font-bold text-lg">
           <span className="mr-2">🎓</span> EduPath
         </div>
+        
+        {/* Menu Tengah: Hanya Home */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium text-slate-500">
-          <a href="/" className="hover:text-blue-600 transition">Home</a>
-          <a href="#" className="text-blue-600 font-semibold">Assessment</a>
-          <a href="#" className="hover:text-blue-600 transition">Insights</a>
-          <a href="#" className="hover:text-blue-600 transition">Profile</a>
+          <button onClick={handleGoHome} className="text-blue-600 font-semibold hover:text-blue-700 transition">
+            Home
+          </button>
         </nav>
-        <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-sm cursor-pointer">
-          AL
+
+        {/* Logo Avatar Profil */}
+        <div 
+          onClick={onProfileClick}
+          className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold shadow-sm cursor-pointer hover:bg-slate-800 transition"
+          title="Lihat Profil"
+        >
+          {initials}
         </div>
       </header>
 
@@ -266,7 +273,7 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess }) {
 
             <div className="flex justify-between items-center pt-4 border-t border-slate-100">
               <button 
-                type="button" onClick={onBack} disabled={isLoading}
+                type="button" onClick={() => onBack('step1')} disabled={isLoading}
                 className={`px-6 py-3 border border-slate-300 text-slate-600 font-medium rounded-lg transition ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50'}`}
               >
                 Kembali

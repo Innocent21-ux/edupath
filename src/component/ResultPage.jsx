@@ -1,32 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
 } from 'recharts';
 
 function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData }) {
-  // Mengambil bungkus "data" utama dari respons backend
-  const finalData = resultData?.data;
+  const finalData = resultData?.data || resultData;
 
-  // State interaksi
   const [openAccordion, setOpenAccordion] = useState('alasan'); 
   const [showAllCareers, setShowAllCareers] = useState(false);  
 
-  // 1. Data User & AI Summary
-  const fullName = finalData?.user_details?.full_name || finalData?.user?.full_name || "Siswa";
-  const schoolName = finalData?.user_details?.school_name || finalData?.user?.school_name || "Sekolah Tidak Diketahui";
-  const aiSummary = finalData?.ai_summary || "Berdasarkan analisis AI, kamu memiliki potensi besar.";
+  // =================================================================
+  // 1. STATE DATA USER (Diisi awal dengan memori browser jika ada)
+  // =================================================================
+  const [userData, setUserData] = useState({
+    full_name: localStorage.getItem('user_name') || 'Siswa',
+    school_name: localStorage.getItem('user_school') || 'Sekolah Tidak Diketahui'
+  });
 
-  // 2. DATA AI EXPLANATION (Dinamic dari Backend)
+  // =================================================================
+  // 2. FETCH DATA PROFIL LANGSUNG DARI DATABASE (Jemput Bola)
+  // =================================================================
+  useEffect(() => {
+    const fetchLatestProfile = async () => {
+      try {
+        const token = localStorage.getItem('user_token');
+        if (!token) return; 
+
+        const response = await fetch('https://edupath-backend.vercel.app/api/v1/profiles/me', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          // Timpa data "Siswa" dengan data asli dari database
+          setUserData({
+            full_name: result.data.full_name || 'Siswa',
+            school_name: result.data.school_name || 'Sekolah Tidak Diketahui'
+          });
+          
+          // Perbarui memori browser agar sinkron
+          localStorage.setItem('user_name', result.data.full_name);
+          localStorage.setItem('user_school', result.data.school_name);
+        }
+      } catch (error) {
+        console.error('Gagal menarik data profil di Result Page:', error);
+      }
+    };
+
+    fetchLatestProfile();
+  }, []);
+
+  // =================================================================
+  // 3. Penentuan Akhir Nama & Sekolah
+  // =================================================================
+  const fullName = finalData?.user_details?.full_name || finalData?.user?.full_name || userData.full_name;
+  const schoolName = finalData?.user_details?.school_name || finalData?.user?.school_name || userData.school_name;
+
+  const aiSummary = finalData?.ai_summary || "Berdasarkan analisis AI, kamu memiliki potensi besar.";
   const aiExplanation = finalData?.ai_explanation || {};
   const alasanText = aiExplanation.alasan || "Data alasan belum tersedia dari AI.";
   const kekuatanText = aiExplanation.kekuatan || "Data kekuatan belum tersedia dari AI.";
   const saranText = aiExplanation.saran || "Data saran pengembangan belum tersedia dari AI.";
   const referensiList = aiExplanation.referensi || [];
 
-  // 3. DATA REKOMENDASI KARIR
   const careers = finalData?.career_matches || [];
 
-  // 4. DATA RADAR CHART 
   const radarData = [
     { subject: `Math (${Number(academicData?.['Matematika']) || 0})`, A: Number(academicData?.['Matematika']) || 0, fullMark: 100 },
     { subject: `English (${Number(academicData?.['Bahasa Inggris']) || 0})`, A: Number(academicData?.['Bahasa Inggris']) || 0, fullMark: 100 },
@@ -37,7 +80,6 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
     { subject: `Physics (${Number(academicData?.['Fisika']) || 0})`, A: Number(academicData?.['Fisika']) || 0, fullMark: 100 }
   ];
 
-  // 5. KALKULASI SKOR RATA-RATA
   const calculateAverage = (list) => {
     const scores = list.map(key => Number(academicData?.[key]) || 0);
     if (scores.length === 0) return "0.0";
@@ -114,12 +156,9 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                  <span className="text-blue-500 mr-2">🎯</span> Rekomendasi Karir Teratas
               </h2>
               
-              {/* Menampilkan 2 Karir Utama */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {careers.slice(0, 2).map((career, index) => {
-                  // Sesuai dengan respons API (sudah format persen seperti 99.91)
                   const confidencePercent = Math.round(career?.confidence_score || 0);
-                  // Sesuai struktur API contract baru
                   const careerName = career?.career_name || "Nama Karir";
                   const careerDesc = career?.description || "Deskripsi Karir";
                   const majorsList = career?.related_majors || [];
@@ -152,7 +191,6 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                 })}
               </div>
 
-              {/* DROPDOWN INTERAKTIF "LIHAT SEMUA JALUR" */}
               {careers.length > 2 && (
                 <div className="mt-4 flex flex-col">
                   {showAllCareers && (
@@ -306,7 +344,7 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
                </div>
             </div>
 
-            {/* REFERENSI AKADEMIK (Dinamis dari AI Explanation) */}
+            {/* REFERENSI AKADEMIK */}
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
               <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center">
                 <span className="text-blue-500 mr-2">🎓</span> Referensi Akademik

@@ -106,7 +106,7 @@ function Register({ onRegisterSuccess, onNavigateLogin }) {
             <input type="password" name="password" required minLength="8" value={formData.password} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition bg-slate-50 focus:bg-white text-sm" placeholder="Minimal 8 karakter" />
           </div>
 
-          <button type="submit" disabled={isLoading} className={`w-full py-3.5 mt-2 rounded-xl font-bold text-white transition-all shadow-lg ${isLoading ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 hover:shadow-green-500/30'}`}>
+          <button type="submit" disabled={isLoading} className={`w-full py-3.5 mt-2 rounded-xl font-bold text-white transition-all shadow-lg ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/30'}`}>
             {isLoading ? 'Memproses...' : 'Daftar Akun'}
           </button>
         </form>

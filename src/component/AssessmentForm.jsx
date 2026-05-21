@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function AssessmentForm({ onNext, onBack }) {
+function AssessmentForm({ onNext, onBack, onProfileClick }) { // Tambahkan onProfileClick
   const subjects = ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Sejarah', 'Geografi', 'Bahasa Inggris'];
 
-  // State untuk menyimpan nilai inputan
   const [grades, setGrades] = useState(
     subjects.reduce((acc, subject) => {
       acc[subject] = '';
@@ -11,19 +10,30 @@ function AssessmentForm({ onNext, onBack }) {
     }, {})
   );
 
-  // State untuk menyimpan pesan error
   const [errors, setErrors] = useState({});
+  
+  // State untuk inisial profil
+  const [initials, setInitials] = useState('U');
+
+  // Mengambil nama dari localStorage
+  useEffect(() => {
+    const fullName = localStorage.getItem('user_name');
+    if (fullName) {
+      const nameParts = fullName.trim().split(' ');
+      const ini = nameParts.length > 1 
+        ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+        : nameParts[0][0].toUpperCase();
+      setInitials(ini);
+    }
+  }, []);
 
   const handleGradeChange = (subject, value) => {
-    // Menyimpan nilai yang diketik
     setGrades((prev) => ({ ...prev, [subject]: value }));
 
-    // Validasi: Harus berupa angka antara 0 - 100
     const numValue = Number(value);
     if (value !== '' && (isNaN(numValue) || numValue < 0 || numValue > 100)) {
       setErrors((prev) => ({ ...prev, [subject]: 'Value must be between 0 and 100' }));
     } else {
-      // Menghapus error jika sudah benar
       setErrors((prev) => ({ ...prev, [subject]: null }));
     }
   };
@@ -31,7 +41,6 @@ function AssessmentForm({ onNext, onBack }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Cek apakah masih ada error sebelum lanjut
     const hasErrors = Object.values(errors).some(err => err !== null);
     if (hasErrors) {
       alert("Mohon perbaiki nilai yang salah sebelum melanjutkan.");
@@ -45,22 +54,26 @@ function AssessmentForm({ onNext, onBack }) {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
       
-      {/* Navbar Minimalis */}
-      <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center">
+      {/* HEADER NAVIGASI SERAGAM */}
+      <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center w-full">
         <div className="flex items-center text-blue-700 font-bold text-lg">
           <span className="mr-2">🎓</span> EduPath
         </div>
         
+        {/* Menu Tengah: Hanya Home */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium text-slate-500">
-          <a href="{{ route('LandingPage') }}" className="hover:text-blue-600 transition">Home</a>
-          <a href="#" className="text-blue-600 font-semibold">Assessment</a>
-          <a href="#" className="hover:text-blue-600 transition">Insights</a>
-          <a href="#" className="hover:text-blue-600 transition">Profile</a>
+          <button onClick={onBack} className="text-blue-600 font-semibold hover:text-blue-700 transition">
+            Home
+          </button>
         </nav>
 
-        {/* User Avatar */}
-        <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-sm cursor-pointer">
-          AL
+        {/* Logo Avatar Profil */}
+        <div 
+          onClick={onProfileClick}
+          className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold shadow-sm cursor-pointer hover:bg-slate-800 transition"
+          title="Lihat Profil"
+        >
+          {initials}
         </div>
       </header>
 

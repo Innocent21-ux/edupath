@@ -20,7 +20,7 @@ function UserProfilePage({ onBack, onLogout }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // 1. MENGAMBIL DATA PROFIL & RIWAYAT SAAT HALAMAN DIBUKA
+  // DATA PROFIL & RIWAYAT HALAMAN
   useEffect(() => {
     fetchUserProfile();
     fetchAssessmentHistory();
@@ -52,7 +52,7 @@ function UserProfilePage({ onBack, onLogout }) {
     }
   };
 
-  // 2. MENGAMBIL DAFTAR RIWAYAT ASESMEN (GET /assessments)
+  // MENGAMBIL DAFTAR RIWAYAT ASESMEN
   const fetchAssessmentHistory = async () => {
     setIsLoadingHistory(true);
     try {
@@ -72,7 +72,7 @@ function UserProfilePage({ onBack, onLogout }) {
     }
   };
 
-  // 3. MENGAMBIL DETAIL ASESMEN SPESIFIK (GET /assessments/{id})
+  // MENGAMBIL DETAIL ASESMEN SPESIFIK
   const handleViewDetail = async (assessmentId) => {
     setShowModal(true); // Tampilkan modal langsung
     setIsLoadingDetail(true);
@@ -98,7 +98,7 @@ function UserProfilePage({ onBack, onLogout }) {
     }
   };
 
-  // 4. MEMPERBARUI DATA PROFIL
+  // MEMPERBARUI DATA PROFIL
   const handleEditChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -185,9 +185,7 @@ function UserProfilePage({ onBack, onLogout }) {
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-8">
         
-        {/* ========================================= */}
         {/* KARTU PROFIL PENGGUNA                     */}
-        {/* ========================================= */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="bg-linear-to-r from-blue-600 to-indigo-600 h-24 relative">
             <div className="absolute -bottom-8 left-8">
@@ -248,9 +246,7 @@ function UserProfilePage({ onBack, onLogout }) {
           </div>
         </div>
 
-        {/* ========================================= */}
         {/* BAGIAN RIWAYAT ASESMEN                    */}
-        {/* ========================================= */}
         <div>
           <div className="flex items-center justify-between mb-4 px-2">
             <h2 className="text-lg font-bold text-slate-800 flex items-center">
@@ -302,9 +298,7 @@ function UserProfilePage({ onBack, onLogout }) {
 
       </main>
 
-      {/* ========================================= */}
       {/* POP-UP MODAL: DETAIL ASESMEN              */}
-      {/* ========================================= */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-slideUp">

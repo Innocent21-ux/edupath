@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function AssessmentForm({ onNext, onBack, onProfileClick }) { // Tambahkan onProfileClick
+function AssessmentForm({ onNext, onBack, onProfileClick }) {
   const subjects = ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Sejarah', 'Geografi', 'Bahasa Inggris'];
 
   const [grades, setGrades] = useState(
@@ -54,15 +54,15 @@ function AssessmentForm({ onNext, onBack, onProfileClick }) { // Tambahkan onPro
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
       
-      {/* HEADER NAVIGASI SERAGAM */}
+      {/* HEADER NAVIGASI */}
       <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center w-full">
         <div className="flex items-center text-blue-700 font-bold text-lg">
-          <span className="mr-2">🎓</span> EduPath
+          <span className="mr-2"></span> EduPath
         </div>
         
-        {/* Menu Tengah: Hanya Home */}
+        {/* Menu Tengah */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium text-slate-500">
-          <button onClick={onBack} className="text-blue-600 font-semibold hover:text-blue-700 transition">
+          <button onClick={onBack} className="text-blue-600 font-bold text-lg hover:text-blue-700 transition">
             Home
           </button>
         </nav>

@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
+import iconRegister from '../assets/register.png'; 
 
-function Register({ onRegisterSuccess, onNavigateLogin }) {
-  // Sesuai dengan Request Body di API Contract
+function Register({ onRegisterSuccess, onLoginClick, onBack }) {
   const [formData, setFormData] = useState({
-    full_name: '', 
+    full_name: '',
+    school_name: '',
     email: '',
-    password: '',
-    school_name: '' 
+    password: ''
   });
-  
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -22,7 +21,6 @@ function Register({ onRegisterSuccess, onNavigateLogin }) {
     setErrorMsg('');
 
     try {
-      // Menggunakan endpoint /auth/register
       const response = await fetch('https://edupath-backend.vercel.app/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -31,34 +29,21 @@ function Register({ onRegisterSuccess, onNavigateLogin }) {
 
       const result = await response.json();
 
-      // Cek status success dari response API
       if (!result.success) {
-        let errorMessage = 'Terjadi kesalahan sistem.';
-        
-        // 1. Cek apakah ini error Validasi (400) yang berbentuk Array
+        let errorMessage = 'Gagal mendaftar.';
         if (result.error?.code === 'VALIDATION_ERROR' && Array.isArray(result.error.details)) {
-          // Mengambil semua pesan error validasi dan menggabungkannya dengan koma
           errorMessage = result.error.details.map(err => err.message).join(', ');
-        } 
-        // 2. Cek apakah ini error Global (401, 429, 500) yang berbentuk Teks String
-        else if (typeof result.error?.details === 'string') {
+        } else if (typeof result.error?.details === 'string') {
           errorMessage = result.error.details;
-        } 
-        // 3. Cadangan jika bentuknya format lain
-        else if (result.message) {
+        } else if (result.message) {
           errorMessage = result.message;
         }
-
         throw new Error(errorMessage);
       }
-      if (result.data?.full_name) {
-        localStorage.setItem('user_name', result.data.full_name);
-      }
-      if (result.data?.school_name) {
-        localStorage.setItem('user_school', result.data.school_name);
-      }
 
-      // Jika sukses daftar, arahkan user ke halaman login
+      if (result.data?.full_name) localStorage.setItem('user_name', result.data.full_name);
+      if (result.data?.school_name) localStorage.setItem('user_school', result.data.school_name);
+
       if (onRegisterSuccess) onRegisterSuccess();
       
     } catch (error) {
@@ -69,54 +54,110 @@ function Register({ onRegisterSuccess, onNavigateLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden p-8 border border-slate-100">
+    <div className="min-h-screen w-full flex items-center justify-center font-sans text-slate-800 bg-slate-100 p-4 sm:p-8">
+      
+      {/* KARTU UTAMA */}
+      <div className="bg-white w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl shadow-2xl overflow-hidden min-h-150">
         
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-green-50 text-green-600 rounded-full mb-4 text-2xl">🌱</div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-1">Buat Akun Baru</h1>
-          <p className="text-sm text-slate-500">Mulai petakan masa depanmu</p>
+      {/* SISI KIRI: Formulir Pendaftaran */}
+        <div className="w-full lg:w-1/2 p-8 sm:p-12 md:p-16 flex flex-col justify-center relative">
+          
+      {/* Tombol Kembali */}
+          <div className="absolute top-6 left-6 md:top-8 md:left-8">
+            <button 
+              onClick={onBack} 
+              className="text-slate-400 hover:text-blue-600 font-bold flex items-center transition text-sm"
+            >
+              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Kembali
+            </button>
+          </div>
+
+          <div className="mt-8">
+      {/* Judul Form */}
+            <div className="mb-8 relative inline-block">
+              <h2 className="text-3xl font-bold text-slate-900">Daftar Akun</h2>
+              <div className="h-1 w-12 bg-blue-600 mt-2 rounded-full"></div>
+            </div>
+
+            {errorMsg && (
+              <div className="bg-red-50 text-red-600 text-xs p-3 rounded-lg mb-6 border border-red-100 font-medium flex items-start">
+                <svg className="w-4 h-4 mr-2 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                {errorMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleRegister} className="space-y-5">
+              <div>
+                <input 
+                  type="text" name="full_name" required value={formData.full_name} onChange={handleChange}
+                  placeholder="Nama Lengkap (Contoh: Budi Santoso)"
+                  className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition bg-slate-50 focus:bg-white text-sm"
+                />
+              </div>
+
+              <div>
+                <input 
+                  type="text" name="school_name" required value={formData.school_name} onChange={handleChange}
+                  placeholder="Asal Sekolah (Contoh: SMAN 1 Jakarta)"
+                  className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition bg-slate-50 focus:bg-white text-sm"
+                />
+              </div>
+
+              <div>
+                <input 
+                  type="email" name="email" required value={formData.email} onChange={handleChange}
+                  placeholder="Alamat Email (budi@example.com)"
+                  className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition bg-slate-50 focus:bg-white text-sm"
+                />
+              </div>
+
+              <div>
+                <input 
+                  type="password" name="password" required value={formData.password} onChange={handleChange} minLength="8"
+                  placeholder="Password (Minimal 8 karakter)"
+                  className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition bg-slate-50 focus:bg-white text-sm"
+                />
+              </div>
+
+              <button 
+                type="submit" disabled={isLoading}
+                className={`w-full text-white font-bold py-3.5 rounded-xl shadow-md transition mt-2 text-sm ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              >
+                {isLoading ? 'Memproses...' : 'Daftar Sekarang'}
+              </button>
+            </form>
+
+            <div className="mt-8 text-center text-sm font-medium text-slate-500">
+              Sudah punya akun?{' '}
+              <button onClick={onLoginClick} className="text-blue-600 hover:text-blue-800 hover:underline font-bold transition">
+                Masuk di sini
+              </button>
+            </div>
+          </div>
         </div>
 
-        {errorMsg && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-6 border border-red-100 flex items-start">
-            <svg className="w-5 h-5 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>{errorMsg}</span>
-          </div>
-        )}
+      {/* SISI KANAN: Gambar dengan Overlay Warna */}
 
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-            <input type="text" name="full_name" required value={formData.full_name} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition bg-slate-50 focus:bg-white text-sm" placeholder="Contoh: Budi Santoso" />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Asal Sekolah</label>
-            <input type="text" name="school_name" required value={formData.school_name} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition bg-slate-50 focus:bg-white text-sm" placeholder="Contoh: SMA Negeri 1 Jakarta" />
-          </div>
+        <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-12 text-center overflow-hidden bg-transparent">
+          <img 
+            src={iconRegister} 
+            alt="EduPath Illustration" 
+            className="absolute inset-auto w-auto h-auto"
+          />
+          <div className="absolute inset-0 z-10"></div>
+          <div className="absolute inset-0 bg-linear-to-t from-indigo-900/90 to-transparent z-10"></div>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Email</label>
-            <input type="email" name="email" required value={formData.email} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition bg-slate-50 focus:bg-white text-sm" placeholder="budi@example.com" />
+          <div className="relative z-20 space-y-4">
+            <h3 className="text-3xl xl:text-4xl font-extrabold text-white leading-tight">
+              Setiap langkah kecil<br />adalah awal yang besar.
+            </h3>
+            <p className="text-blue-100 text-lg font-medium">
+              Mari rancang masa depanmu.
+            </p>
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Password</label>
-            <input type="password" name="password" required minLength="8" value={formData.password} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition bg-slate-50 focus:bg-white text-sm" placeholder="Minimal 8 karakter" />
-          </div>
-
-          <button type="submit" disabled={isLoading} className={`w-full py-3.5 mt-2 rounded-xl font-bold text-white transition-all shadow-lg ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/30'}`}>
-            {isLoading ? 'Memproses...' : 'Daftar Akun'}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-slate-500 mt-6">
-          Sudah punya akun?{' '}
-          <button onClick={onNavigateLogin} className="text-blue-600 font-bold hover:underline">
-            Masuk di sini
-          </button>
-        </p>
       </div>
     </div>
   );

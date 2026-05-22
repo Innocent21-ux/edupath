@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 function LoadingPage() {
   const [text, setText] = useState('Menghubungkan pola...');
 
-  // Efek teks berubah-ubah agar terasa dinamis
+  // Efek teks berubah-ubah
   useEffect(() => {
     const messages = [
       'Menghubungkan pola...',

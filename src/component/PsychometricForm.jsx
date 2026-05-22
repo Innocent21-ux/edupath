@@ -131,12 +131,12 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
       {/* HEADER NAVIGASI SERAGAM */}
       <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center w-full">
         <div className="flex items-center text-blue-700 font-bold text-lg">
-          <span className="mr-2">🎓</span> EduPath
+          <span className="mr-2"></span> EduPath
         </div>
         
-        {/* Menu Tengah: Hanya Home */}
+        {/* Menu Home */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium text-slate-500">
-          <button onClick={handleGoHome} className="text-blue-600 font-semibold hover:text-blue-700 transition">
+          <button onClick={handleGoHome} className="text-blue-600 font-bold text-lg hover:text-blue-700 transition">
             Home
           </button>
         </nav>

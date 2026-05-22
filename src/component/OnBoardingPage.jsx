@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import icon from '../assets/education.png'; 
 
 function OnboardingPage({ onNext, onBack, onProfileClick }) {
   const subjects = ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Sejarah', 'Geografi', 'Bahasa Inggris'];
@@ -43,12 +44,12 @@ function OnboardingPage({ onNext, onBack, onProfileClick }) {
       {/* HEADER NAVIGASI */}
       <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center w-full">
         <div className="flex items-center text-blue-700 font-bold text-lg">
-          <span className="mr-2">🎓</span> EduPath
+          <span className="mr-2"></span> EduPath
         </div>
         
         {/* Menu Tengah: Hanya Home */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium text-slate-500">
-          <button onClick={onBack} className="text-blue-600 font-semibold hover:text-blue-700 transition">
+          <button onClick={onBack} className="text-blue-600 font-bold text-lg hover:text-blue-700 transition">
             Home
           </button>
         </nav>
@@ -68,10 +69,14 @@ function OnboardingPage({ onNext, onBack, onProfileClick }) {
         <div className="bg-white max-w-3xl w-full rounded-2xl shadow-xl overflow-hidden mt-0">
           
           <div className="relative bg-slate-200 h-48 flex items-center justify-center">
-            <div className="absolute inset-0 bg-linear-to-r from-[#d9c5b2] to-[#e6d5c3] opacity-80"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-[#325afa] to-[#e6d5c3] opacity-80"></div>
             <div className="relative z-10 flex flex-col items-center mt-6">
                <div className="bg-white p-3 rounded-full shadow-md mb-2">
-                  <span className="text-blue-700 text-2xl">🎓</span>
+                  <img 
+                    src={icon} 
+                    alt="EduPath Illustration" 
+                    className="w-10 h-10"
+                  />
                </div>
                <h1 className="text-2xl font-bold text-slate-800">Selamat Datang di EduPath</h1>
             </div>
@@ -142,6 +147,26 @@ function OnboardingPage({ onNext, onBack, onProfileClick }) {
           </div>
         </div>
       </main>
+
+      {/* CSS untuk Animasi */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes loadingBar {
+          0% { width: 0%; left: 0%; }
+          50% { width: 40%; left: 30%; }
+          100% { width: 100%; left: 0%; }
+        }
+        .animate-loadingBar {
+          animation: loadingBar 2s ease-in-out infinite;
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}} />
+
     </div>
   );
 }

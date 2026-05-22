@@ -32,7 +32,8 @@ function App() {
     return (
       <Login 
         onLoginSuccess={() => setCurrentPage('landing')} 
-        onNavigateRegister={() => setCurrentPage('register')} 
+        onNavigateRegister={() => setCurrentPage('register')}
+        onBack={() => setCurrentPage('landing')} 
       />
     );
   }
@@ -41,7 +42,8 @@ function App() {
     return (
       <Register 
         onRegisterSuccess={() => setCurrentPage('login')} 
-        onNavigateLogin={() => setCurrentPage('login')} 
+        onLoginClick={() => setCurrentPage('login')}
+        onBack={() => setCurrentPage('landing')} 
       />
     );
   }

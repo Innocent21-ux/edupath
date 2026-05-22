@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import ai from '../assets/iconAI.png';
+import chart from '../assets/iconChart.png';
+import target from '../assets/iconTarget.png';
+import LandingPageIlustration from '../assets/ilustration1.png';
 
 function LandingPage({ onStart, onLoginClick, onRegisterClick, onProfileClick }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [initials, setInitials] = useState('');
 
-  // Mengecek status login setiap kali Landing Page dibuka
+  // status login setiap kali Landing Page dibuka
   useEffect(() => {
     const token = localStorage.getItem('user_token');
     const fullName = localStorage.getItem('user_name');
@@ -14,11 +18,11 @@ function LandingPage({ onStart, onLoginClick, onRegisterClick, onProfileClick })
       setIsLoggedIn(true);
       
       if (fullName) {
-        // Mengambil nama depan saja
+        // Mengambil nama depan 
         const nameParts = fullName.trim().split(' ');
         setFirstName(nameParts[0]);
 
-        // Membuat inisial (contoh: Ivan Kolap -> IK)
+        // Membuat inisial
         const ini = nameParts.length > 1 
           ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
           : nameParts[0][0].toUpperCase();
@@ -34,10 +38,10 @@ function LandingPage({ onStart, onLoginClick, onRegisterClick, onProfileClick })
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col">
       <header className="flex justify-between items-center px-10 py-6">
         <div className="flex items-center text-blue-700 font-bold text-xl">
-          <span className="mr-2">🎓</span> EduPath
+          <span className="mr-2"></span> EduPath
         </div>
         
-        {/* HEADER KANAN: TOMBOL PROFIL */}
+        {/* TOMBOL PROFIL */}
         <div className="flex items-center">
           {isLoggedIn ? (
             <button onClick={onProfileClick} className="flex items-center gap-3 hover:bg-slate-200 p-1.5 pr-4 rounded-full transition group">
@@ -66,7 +70,7 @@ function LandingPage({ onStart, onLoginClick, onRegisterClick, onProfileClick })
             Kami membantu mengurangi kebingungan dalam memilih masa depan dengan memberikan rekomendasi berbasis data yang tenang dan dapat diandalkan.
           </p>
           
-          {/* TOMBOL HERO SECTION (TENGAH) */}
+          {/* HERO SECTION */}
           <div className="flex flex-wrap gap-4">
             {isLoggedIn ? (
               <button 
@@ -96,10 +100,13 @@ function LandingPage({ onStart, onLoginClick, onRegisterClick, onProfileClick })
 
         </div>
         
-        <div className="w-full md:w-1/2 mt-10 md:mt-0 flex justify-center">
-          <div className="bg-teal-100 w-full h-96 rounded-3xl flex items-center justify-center shadow-xl text-teal-800 font-medium">
-            [Ilustrasi Siswa Belajar]
-          </div>
+        <div className="w-full md:w-1/2 mt-10 md:mt-0 flex justify-center items-center">
+          <img 
+            src={LandingPageIlustration} 
+            alt="Ilustrasi siswa belajar dengan EduPath AI" 
+            className="w-full h-auto rounded-3xl object-cover" 
+            loading="lazy"
+          />
         </div>
       </main>
 
@@ -109,26 +116,46 @@ function LandingPage({ onStart, onLoginClick, onRegisterClick, onProfileClick })
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-left">
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 text-2xl">🤖</div>
+            <div className="w-12 h-12 bg-transparent text-blue-600 rounded-xl flex items-center justify-center mb-6 text-2xl">
+              <img 
+            src={ai} 
+            alt="ai" 
+            className="w-full h-auto rounded-3xl object-cover" 
+            loading="lazy"/>
+            </div>
             <h3 className="text-xl font-bold mb-3">Berbasis AI</h3>
             <p className="text-slate-500 text-sm">Algoritma cerdas kami memproses data kompleks Anda untuk memberikan prediksi dan rekomendasi yang sangat akurat.</p>
           </div>
+
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-left">
-            <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-6 text-2xl">🎯</div>
+            <div className="w-12 h-12 bg-transparent text-green-600 rounded-xl flex items-center justify-center mb-6 text-2xl">
+              <img 
+            src={target} 
+            alt="target" 
+            className="w-full h-auto rounded-3xl object-cover" 
+            loading="lazy"/>
+              </div>
             <h3 className="text-xl font-bold mb-3">Holistic Assessment</h3>
             <p className="text-slate-500 text-sm">Evaluasi menyeluruh yang mencakup nilai rapor, tes kepribadian, dan minat karir untuk gambaran lengkap potensi Anda.</p>
           </div>
+
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-left">
-            <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mb-6 text-2xl">📊</div>
+            <div className="w-12 h-12 bg-transparent text-orange-600 rounded-xl flex items-center justify-center mb-6 text-2xl">
+            <img 
+            src={chart} 
+            alt="chart" 
+            className="w-full h-auto rounded-3xl object-cover" 
+            loading="lazy"/>
+            </div>
             <h3 className="text-xl font-bold mb-3">Visualisasi Interaktif</h3>
             <p className="text-slate-500 text-sm">Lihat hasil Anda melalui grafik radar dan chart yang bersih dan mudah dipahami, mengubah prediksi abstrak menjadi wawasan konkret.</p>
           </div>
         </div>
       </section>
 
+      {/* FOOTER */}
       <footer className="border-t border-slate-200 bg-slate-50 px-10 py-8 flex flex-col md:flex-row justify-between items-center text-sm">
-        <div className="flex items-center text-blue-700 font-bold mb-4 md:mb-0">
-          <span className="mr-2">🎓</span> EduPath
+        <div className="flex items-center text-blue-700 font-bold mb-4 md:mb-0">EduPath
         </div>
         
         <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-slate-500 font-medium mb-4 md:mb-0">
@@ -139,7 +166,7 @@ function LandingPage({ onStart, onLoginClick, onRegisterClick, onProfileClick })
         </nav>
         
         <div className="text-slate-400 font-medium text-xs md:text-sm text-center">
-          © 2026 EduPath AI. Empowering Future Scholars.
+          © 2026 EduPath. Empowering Future Scholars.
         </div>
       </footer>
     </div>

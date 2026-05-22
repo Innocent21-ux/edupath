@@ -9,17 +9,13 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
   const [openAccordion, setOpenAccordion] = useState('alasan'); 
   const [showAllCareers, setShowAllCareers] = useState(false);  
 
-  // =================================================================
-  // 1. STATE DATA USER (Diisi awal dengan memori browser jika ada)
-  // =================================================================
+  // STATE DATA USER 
   const [userData, setUserData] = useState({
     full_name: localStorage.getItem('user_name') || 'Siswa',
     school_name: localStorage.getItem('user_school') || 'Sekolah Tidak Diketahui'
   });
 
-  // =================================================================
-  // 2. FETCH DATA PROFIL LANGSUNG DARI DATABASE (Jemput Bola)
-  // =================================================================
+  // FETCH DATA PROFIL LANGSUNG DARI DATABASE (Jemput Bola)
   useEffect(() => {
     const fetchLatestProfile = async () => {
       try {
@@ -55,9 +51,7 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
     fetchLatestProfile();
   }, []);
 
-  // =================================================================
   // 3. Penentuan Akhir Nama & Sekolah
-  // =================================================================
   const fullName = finalData?.user_details?.full_name || finalData?.user?.full_name || userData.full_name;
   const schoolName = finalData?.user_details?.school_name || finalData?.user?.school_name || userData.school_name;
 
@@ -125,8 +119,6 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
 
         {/* MAIN GRID LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* KOLOM KIRI */}
           <div className="lg:col-span-2 space-y-6">
             
             {/* RADAR CHART */}
@@ -244,8 +236,6 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
             </div>
 
           </div>
-
-          {/* KOLOM KANAN */}
           <div className="lg:col-span-1 space-y-6">
             
             {/* BOX STATISTIK */}

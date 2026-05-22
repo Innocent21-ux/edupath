@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { fetchWithAuth, handleLogout as backendLogout } from '../utils/auth';
 
 function UserProfilePage({ onBack, onLogout }) {
   const [profileData, setProfileData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // State untuk Mode Edit
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({ full_name: '', school_name: '' });
 
-  // State untuk Riwayat & Detail Asesmen
   const [historyList, setHistoryList] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   
@@ -20,7 +19,6 @@ function UserProfilePage({ onBack, onLogout }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // DATA PROFIL & RIWAYAT HALAMAN
   useEffect(() => {
     fetchUserProfile();
     fetchAssessmentHistory();
@@ -30,12 +28,8 @@ function UserProfilePage({ onBack, onLogout }) {
     setIsLoading(true);
     setErrorMsg('');
     try {
-      const token = localStorage.getItem('user_token');
-      if (!token) throw new Error('Token tidak ditemukan. Silakan login kembali.');
-
-      const response = await fetch('https://edupath-backend.vercel.app/api/v1/profiles/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // MENGGUNAKAN fetchWithAuth (Otomatis handle Bearer Token & Refresh Token)
+      const response = await fetchWithAuth('https://edupath-backend.vercel.app/api/v1/profiles/me');
       const result = await response.json();
 
       if (!result.success) throw new Error(result.message || 'Gagal mengambil profil.');
@@ -52,14 +46,11 @@ function UserProfilePage({ onBack, onLogout }) {
     }
   };
 
-  // MENGAMBIL DAFTAR RIWAYAT ASESMEN
   const fetchAssessmentHistory = async () => {
     setIsLoadingHistory(true);
     try {
-      const token = localStorage.getItem('user_token');
-      const response = await fetch('https://edupath-backend.vercel.app/api/v1/assessments', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // MENGGUNAKAN fetchWithAuth
+      const response = await fetchWithAuth('https://edupath-backend.vercel.app/api/v1/assessments');
       const result = await response.json();
 
       if (result.success && result.data) {
@@ -72,17 +63,14 @@ function UserProfilePage({ onBack, onLogout }) {
     }
   };
 
-  // MENGAMBIL DETAIL ASESMEN SPESIFIK
   const handleViewDetail = async (assessmentId) => {
-    setShowModal(true); // Tampilkan modal langsung
+    setShowModal(true);
     setIsLoadingDetail(true);
-    setSelectedDetail(null); // Kosongkan data lama
+    setSelectedDetail(null);
 
     try {
-      const token = localStorage.getItem('user_token');
-      const response = await fetch(`https://edupath-backend.vercel.app/api/v1/assessments/${assessmentId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // MENGGUNAKAN fetchWithAuth
+      const response = await fetchWithAuth(`https://edupath-backend.vercel.app/api/v1/assessments/${assessmentId}`);
       const result = await response.json();
 
       if (result.success) {
@@ -92,13 +80,12 @@ function UserProfilePage({ onBack, onLogout }) {
       }
     } catch (error) {
       console.error(error);
-      setSelectedDetail({ error: true }); // Penanda error di modal
+      setSelectedDetail({ error: true });
     } finally {
       setIsLoadingDetail(false);
     }
   };
 
-  // MEMPERBARUI DATA PROFIL
   const handleEditChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -110,13 +97,9 @@ function UserProfilePage({ onBack, onLogout }) {
     setSuccessMsg('');
 
     try {
-      const token = localStorage.getItem('user_token');
-      const response = await fetch('https://edupath-backend.vercel.app/api/v1/profiles/me', {
+      // MENGGUNAKAN fetchWithAuth (Hanya perlu mengirim method dan body)
+      const response = await fetchWithAuth('https://edupath-backend.vercel.app/api/v1/profiles/me', {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify(formData)
       });
       const result = await response.json();
@@ -146,11 +129,11 @@ function UserProfilePage({ onBack, onLogout }) {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user_token');
-    localStorage.removeItem('user_name');
-    localStorage.removeItem('user_school');
-    if (onLogout) onLogout();
+  // MENGGUNAKAN FUNGSI LOGOUT DARI authUtils
+  const handleLogoutClick = () => {
+    backendLogout(() => {
+      if (onLogout) onLogout(); // Panggil fungsi transisi halaman dari App.jsx
+    });
   };
 
   const getInitials = (name) => {
@@ -158,7 +141,6 @@ function UserProfilePage({ onBack, onLogout }) {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
-  // Fungsi Format Tanggal (Contoh: 15 Mei 2026)
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -185,7 +167,7 @@ function UserProfilePage({ onBack, onLogout }) {
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-8">
         
-        {/* KARTU PROFIL PENGGUNA                     */}
+        {/* KARTU PROFIL PENGGUNA */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="bg-linear-to-r from-blue-600 to-indigo-600 h-24 relative">
             <div className="absolute -bottom-8 left-8">
@@ -214,7 +196,8 @@ function UserProfilePage({ onBack, onLogout }) {
                 </div>
                 
                 <div className="flex justify-between items-center border-t border-slate-100 pt-4">
-                  <button onClick={handleLogout} className="px-4 py-2 text-red-600 text-xs font-bold rounded-lg hover:bg-red-50 transition flex items-center">
+                  {/* TOMBOL LOGOUT DIPERBARUI */}
+                  <button onClick={handleLogoutClick} className="px-4 py-2 text-red-600 text-xs font-bold rounded-lg hover:bg-red-50 transition flex items-center">
                     <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     Keluar
                   </button>
@@ -246,7 +229,7 @@ function UserProfilePage({ onBack, onLogout }) {
           </div>
         </div>
 
-        {/* BAGIAN RIWAYAT ASESMEN                    */}
+        {/* BAGIAN RIWAYAT ASESMEN */}
         <div>
           <div className="flex items-center justify-between mb-4 px-2">
             <h2 className="text-lg font-bold text-slate-800 flex items-center">
@@ -298,7 +281,7 @@ function UserProfilePage({ onBack, onLogout }) {
 
       </main>
 
-      {/* POP-UP MODAL: DETAIL ASESMEN              */}
+      {/* POP-UP MODAL: DETAIL ASESMEN */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-slideUp">

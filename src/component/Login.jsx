@@ -16,6 +16,7 @@ function Login({ onLoginSuccess, onNavigateRegister, onBack }) {
       const response = await fetch('https://edupath-backend.vercel.app/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password })
       });
 
@@ -46,14 +47,23 @@ function Login({ onLoginSuccess, onNavigateRegister, onBack }) {
       }
     } catch (error) {
       setErrorMsg(error.message);
-    } finally {
-      setIsLoading(false);
+      // Matikan loading HANYA JIKA ERROR. Jika sukses, biarkan berputar sampai pindah halaman.
+      setIsLoading(false); 
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center font-sans text-slate-800 bg-slate-100 p-4 sm:p-8">
+    <div className="min-h-screen w-full flex items-center justify-center font-sans text-slate-800 bg-slate-100 p-4 sm:p-8 relative">
       
+      {/* OVERLAY LOADING FULL SCREEN */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/60 backdrop-blur-md animate-fadeIn">
+          <div className="w-14 h-14 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-5 shadow-lg"></div>
+          <h2 className="text-2xl font-extrabold text-slate-800 mb-1 tracking-tight">Sedang Masuk...</h2>
+          <p className="text-slate-500 font-medium">Memverifikasi data otentikasi Anda</p>
+        </div>
+      )}
+
       {/* KARTU UTAMA */}
       <div className="bg-white w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl shadow-2xl overflow-hidden min-h-150">
         

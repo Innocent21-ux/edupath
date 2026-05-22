@@ -47,24 +47,7 @@ function LoadingPage() {
         </div>
       </div>
 
-      {/* CSS untuk Animasi (Bisa dipindah ke index.css) */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes loadingBar {
-          0% { width: 0%; left: 0%; }
-          50% { width: 40%; left: 30%; }
-          100% { width: 100%; left: 0%; }
-        }
-        .animate-loadingBar {
-          animation: loadingBar 2s ease-in-out infinite;
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}} />
+      
     </div>
   );
 }

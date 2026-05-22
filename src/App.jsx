@@ -94,10 +94,7 @@ function App() {
           setResultData(apiResponse); 
           setBehavioralData(payloadStep2); 
           setCurrentPage('loading'); 
-
-          setTimeout(() => {
-            setCurrentPage('result');
-          }, 3500);
+          setCurrentPage('result');
         }} 
       />
     );

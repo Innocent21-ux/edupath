@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
 } from 'recharts';
+import { fetchWithAuth } from '../utils/auth';
 
 function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData }) {
   const finalData = resultData?.data || resultData;
@@ -15,31 +16,23 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
     school_name: localStorage.getItem('user_school') || 'Sekolah Tidak Diketahui'
   });
 
-  // FETCH DATA PROFIL LANGSUNG DARI DATABASE (Jemput Bola)
+  // FETCH DATA PROFIL MENGGUNAKAN fetchWithAuth
   useEffect(() => {
     const fetchLatestProfile = async () => {
       try {
         const token = localStorage.getItem('user_token');
         if (!token) return; 
 
-        const response = await fetch('https://edupath-backend.vercel.app/api/v1/profiles/me', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
+        // Pemanggilan API 
+        const response = await fetchWithAuth('https://edupath-backend.vercel.app/api/v1/profiles/me');
         const result = await response.json();
 
         if (result.success && result.data) {
-          // Timpa data "Siswa" dengan data asli dari database
           setUserData({
             full_name: result.data.full_name || 'Siswa',
             school_name: result.data.school_name || 'Sekolah Tidak Diketahui'
           });
           
-          // Perbarui memori browser agar sinkron
           localStorage.setItem('user_name', result.data.full_name);
           localStorage.setItem('user_school', result.data.school_name);
         }
@@ -51,7 +44,6 @@ function ResultPage({ onRetry, onBack, resultData, academicData, behavioralData 
     fetchLatestProfile();
   }, []);
 
-  // 3. Penentuan Akhir Nama & Sekolah
   const fullName = finalData?.user_details?.full_name || finalData?.user?.full_name || userData.full_name;
   const schoolName = finalData?.user_details?.school_name || finalData?.user?.school_name || userData.school_name;
 

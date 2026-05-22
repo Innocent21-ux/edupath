@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+// IMPORT FETCH OTOMATIS & LOADING PAGE
+import { fetchWithAuth } from '../utils/auth';
+import LoadingPage from './LoadingPage';
 
-function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClick }) { // Tambahkan onProfileClick
+function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClick }) { 
   const [studyHours, setStudyHours] = useState(10);
   const [absentDays, setAbsentDays] = useState('');
   
@@ -9,10 +12,8 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
   
   const [isLoading, setIsLoading] = useState(false);
 
-  // State untuk inisial profil
   const [initials, setInitials] = useState('U');
 
-  // Mengambil nama dari localStorage
   useEffect(() => {
     const fullName = localStorage.getItem('user_name');
     if (fullName) {
@@ -26,7 +27,7 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsLoading(true); // <--- INI AKAN MEMICU LOADING PAGE MUNCUL
 
     const payload = {
       math_score: Number(academicData?.['Matematika'] ?? 92), 
@@ -48,38 +49,34 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
 
     try {
       const API_URL = 'https://edupath-backend.vercel.app/api/v1';
-      const token = localStorage.getItem('user_token'); 
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      };
 
-      const assessRes = await fetch(`${API_URL}/assessments`, {
+      // 1. Submit Assessment (MENGGUNAKAN fetchWithAuth)
+      const assessRes = await fetchWithAuth(`${API_URL}/assessments`, {
         method: 'POST',
-        headers,
         body: JSON.stringify(payload)
       });
       if (!assessRes.ok) throw new Error('Gagal submit assessment');
       const assessData = await assessRes.json();
       const assessmentId = assessData.data.assessment_id;
 
-      const predictRes = await fetch(`${API_URL}/recommendations/predict`, {
+      // 2. Generate Prediction (MENGGUNAKAN fetchWithAuth)
+      const predictRes = await fetchWithAuth(`${API_URL}/recommendations/predict`, {
         method: 'POST',
-        headers,
         body: JSON.stringify({ assessment_id: assessmentId })
       });
       if (!predictRes.ok) throw new Error('Gagal memicu AI prediction');
       const predictData = await predictRes.json();
       const recommendationId = predictData.data.recommendation_id;
 
-      const resultRes = await fetch(`${API_URL}/recommendations/${recommendationId}`, {
-        method: 'GET',
-        headers
-      });
+      // 3. Get Recommendation Details (MENGGUNAKAN fetchWithAuth)
+      const resultRes = await fetchWithAuth(`${API_URL}/recommendations/${recommendationId}`);
       if (!resultRes.ok) throw new Error('Gagal mengambil detail hasil');
       const finalResult = await resultRes.json();
 
-      if (onSubmitSuccess) onSubmitSuccess(finalResult, payload);
+      // Buat delay buatan 1.5 detik agar Loading Page sempat dibaca walau internet sangat cepat
+      setTimeout(() => {
+        if (onSubmitSuccess) onSubmitSuccess(finalResult, payload);
+      }, 1500);
 
     } catch (error) {
       console.warn("API Backend gagal. Menggunakan simulasi lokal.");
@@ -89,10 +86,16 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
           success: true,
           data: {
             user_details: {
-              full_name: "Alifa",
-              school_name: "Telkom University"
+              full_name: localStorage.getItem('user_name') || "Siswa",
+              school_name: localStorage.getItem('user_school') || "Telkom University"
             },
-            ai_summary: "Profil Anda menunjukkan kombinasi yang kuat antara logika komputasional dan determinasi belajar yang konsisten.",
+            ai_summary: "Berdasarkan simulasi lokal, profil Anda menunjukkan determinasi belajar yang sangat baik.",
+            ai_explanation: {
+                alasan: `Simulasi menyimpulkan nilai Matematika (${payload.math_score}) dan Fisika (${payload.physics_score}) sangat krusial.`,
+                kekuatan: `Kekuatan utama pada nilai Bahasa Inggris (${payload.english_score}).`,
+                saran: `Pertahankan jam belajar mandiri yang tinggi.`,
+                referensi: [{ title: "Simulasi EduPath", url: "#", keterangan: "Data dummy" }]
+            },
             cognitive_profile: [
               { subject: "Logika & Analitik", value: payload.math_score },
               { subject: "Literasi Sains", value: payload.physics_score },
@@ -103,45 +106,49 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
             ],
             career_matches: [
               {
-                rank: 1, confidence_score: 0.95,
-                career_details: { career_name: "Data Scientist", description: "Ahli analisis data." },
-                recommended_majors: [{ major_name: "Sains Data" }]
+                rank: 1, confidence_score: 95,
+                career_name: "Simulasi Data Scientist", description: "Ini adalah simulasi.",
+                related_majors: [{ major_name: "Sains Data" }]
               }
             ]
           }
         };
-        if (onSubmitSuccess)
-          onSubmitSuccess(mockAPIResponse, payload);
-      }, 1500);
+        if (onSubmitSuccess) onSubmitSuccess(mockAPIResponse, payload);
+        
+        // Kita letakkan setIsLoading(false) di dalam catch, karena jika API sukses,
+        // halaman akan langsung berpindah via onSubmitSuccess (jadi tidak perlu set false).
+        setIsLoading(false); 
+      }, 3500); // Simulasi agak lama agar loading animasi terlihat
 
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  // Fungsi navigasi ke Home
   const handleGoHome = () => {
-    // onBack dari Props di-repurpose untuk me-reset form ke awal (di-handle oleh App.jsx)
     if (onBack) onBack('home'); 
   };
 
+  // =======================================================
+  // KUNCI UTAMA: Cegat render jika sedang loading
+  // =======================================================
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  // Tampilan Form Utama (hanya akan dirender jika isLoading === false)
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col">
       
-      {/* HEADER NAVIGASI SERAGAM */}
       <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center w-full">
         <div className="flex items-center text-blue-700 font-bold text-lg">
-          <span className="mr-2"></span> EduPath
+          <span className="mr-2">🎓</span> EduPath
         </div>
         
-        {/* Menu Home */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium text-slate-500">
           <button onClick={handleGoHome} className="text-blue-600 font-bold text-lg hover:text-blue-700 transition">
             Home
           </button>
         </nav>
 
-        {/* Logo Avatar Profil */}
         <div 
           onClick={onProfileClick}
           className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold shadow-sm cursor-pointer hover:bg-slate-800 transition"
@@ -199,7 +206,6 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
               </div>
             </div>
 
-            {/* FORM RADIO BUTTON: PART-TIME JOB */}
             <div className="mb-8">
               <label className="block text-sm font-medium text-slate-700 mb-3">Apakah Anda saat ini memiliki pekerjaan paruh waktu?</label>
               <div className="grid grid-cols-2 gap-4">
@@ -235,7 +241,6 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
               </div>
             </div>
 
-            {/* FORM RADIO BUTTON: EXTRACURRICULAR */}
             <div className="mb-12">
               <label className="block text-sm font-medium text-slate-700 mb-3">Apakah Anda aktif mengikuti kegiatan ekstrakurikuler?</label>
               <div className="grid grid-cols-2 gap-4">
@@ -274,18 +279,16 @@ function PsychometricForm({ onBack, academicData, onSubmitSuccess, onProfileClic
             <div className="flex justify-between items-center pt-4 border-t border-slate-100">
               <button 
                 type="button" onClick={() => onBack('step1')} disabled={isLoading}
-                className={`px-6 py-3 border border-slate-300 text-slate-600 font-medium rounded-lg transition ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50'}`}
+                className={`px-6 py-3 border border-slate-300 text-slate-600 font-medium rounded-lg transition hover:bg-slate-50`}
               >
                 Kembali
               </button>
               <button 
                 type="submit" disabled={isLoading}
-                className={`font-semibold py-3 px-6 rounded-lg shadow-md transition flex items-center text-white ${isLoading ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#0f763b] hover:bg-green-800'}`}
+                className={`font-semibold py-3 px-6 rounded-lg shadow-md transition flex items-center text-white bg-[#0f763b] hover:bg-green-800`}
               >
-                {isLoading ? 'Memproses Data...' : 'Kirim & Analisis Data'}
-                {!isLoading && (
-                  <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                )}
+                Kirim & Analisis Data
+                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
               </button>
             </div>
           </form>
